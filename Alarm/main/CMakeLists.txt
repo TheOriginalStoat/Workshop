@@ -1,2 +1,4 @@
-idf_component_register(SRCS "hello_world_main.c"
-                    INCLUDE_DIRS "")
+idf_component_register(
+    SRCS "program.c" "main.c" "hardware.c" "mqtt.c" "nvs.c" "ota.c" "program.c"
+    INCLUDE_DIRS "include"
+)
