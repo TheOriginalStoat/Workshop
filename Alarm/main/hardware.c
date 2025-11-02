@@ -17,7 +17,7 @@
 #include "lwip/err.h"
 #include "lwip/sys.h"
 #include "driver/gpio.h"
-// #include "main.h"
+#include <wiegand.h>
 #include "program.h"
 #include "config.h"
 
@@ -44,6 +44,14 @@
 static EventGroupHandle_t eg = NULL;
 static EventGroupHandle_t wifi_event_group;
 static QueueHandle_t gpio_evt_queue = NULL;
+static wiegand_reader_t reader;
+static QueueHandle_t queue = NULL;
+
+typedef struct
+{
+    uint8_t data[4]; // CONFIG_EXAMPLE_BUF_SIZE
+    size_t bits;
+} data_packet_t;
 
 static void IRAM_ATTR gpio_isr_handler(void* arg);
 static void gpio_task(void* arg);
@@ -54,6 +62,7 @@ bool active_wifi = false;
 static const char *TAG_wifi = "wifi";
 static const char *TAG_gpio = "gpio";
 static const char *TAG_sensors = "sensors";
+static const char *TAG_wiegand = "wiegand";
 const char *wifi_ssid;
 const char *wifi_pass;
 const int CONNECTED_BIT = BIT0;
@@ -112,9 +121,58 @@ static void IRAM_ATTR intr_handler(void *arg)
 #endif
 }
 
+#pragma region Wiegand
+static void reader_callback(wiegand_reader_t *r)
+{
+    // you can decode raw data from reader buffer here, but remember:
+    // reader will ignore any new incoming data while executing callback
+
+    // create simple undecoded data packet
+    data_packet_t p;
+    p.bits = r->bits;
+    memcpy(p.data, r->buf, 4);
+
+    // Send it to the queue
+    xQueueSendToBack(queue, &p, 0);
+}
+
+static void task(void *arg)
+{
+    // Create queue
+    queue = xQueueCreate(5, sizeof(data_packet_t));
+    if (!queue)
+    {
+        ESP_LOGE(TAG_wiegand, "Error creating queue");
+        ESP_ERROR_CHECK(ESP_ERR_NO_MEM);
+    }
+
+    // Initialize reader
+    ESP_ERROR_CHECK(wiegand_reader_init(&reader, pinWGD0, pinWGD1,
+                                        true, 4, reader_callback, WIEGAND_MSB_FIRST, WIEGAND_LSB_FIRST));
+
+    data_packet_t p;
+    while (1)
+    {
+        ESP_LOGI(TAG_wiegand, "Waiting for Wiegand data...");
+        xQueueReceive(queue, &p, portMAX_DELAY);
+
+        // dump received data
+        printf("==========================================\n");
+        printf("Bits received: %d\n", p.bits);
+        printf("Received data:");
+        int bytes = p.bits / 8;
+        int tail = p.bits % 8;
+        for (size_t i = 0; i < bytes + (tail ? 1 : 0); i++)
+            printf(" 0x%02x", p.data[i]);
+        printf("\n==========================================\n");
+    }
+}
+#pragma endregion Wiegand
+
 #pragma region GPIO
 static void init_gpio(void)
 {
+    /*
     for (uint8_t i = 0; i <= obj_count_pin_gpio; i ++)
     {
         if (obj_ref[i][obj_col_pin] != 0 && obj_ref[i][obj_col_pin] <= 99) // GPIO pins
@@ -150,7 +208,7 @@ static void init_gpio(void)
             gpio_config(&io_conf);
         }
     }
-
+    */
     gpio_evt_queue = xQueueCreate(10, sizeof(uint32_t));
     xTaskCreate(gpio_task, "gpio_task", 2048, NULL, 10, NULL);
     gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);

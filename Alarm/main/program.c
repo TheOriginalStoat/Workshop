@@ -22,46 +22,6 @@ static const char *TAG_program = "program";
 void set_pin(uint8_t pin, bool state);
 void set_mcp_pin(uint8_t pin, bool state);
 
-const uint8_t pin[obj_count_pin_gpio + obj_count_pin_mcp23x17] = { 0, 2, 4, 5, 12, 13, 14, 15, 
-    16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33, 34, 35, 36, 39, 
-    40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55 };   /* 0-39 GPIO, 40-55 MCP23x17 */
-
-const uint8_t obj_ref[obj_count][4] = { 
-{	0	,	45	,	0	,	0	}	,	//	obj_mount
-{	1	,	46	,	1	,	0	}	,	//	obj_dslr
-{	2	,	0	,	2	,	0	}	,	//	obj_focuser
-{	3	,	43	,	3	,	0	}	,	//	obj_heaters
-{	4	,	44	,	4	,	0	}	,	//	obj_ancillary
-{	0	,	0	,	5	,	0	}	,	//	obj_ctrl1
-{	0	,	47	,	6	,	0	}	,	//	obj_roof_lock
-{	0	,	0	,	7	,	0	}	,	//	obj_roof_motor
-{	5	,	49	,	0	,	0	}	,	//	obj_roof_motor_open
-{	6	,	50	,	0	,	0	}	,	//	obj_roof_motor_close
-{	7	,	0	,	8	,	0	}	,	//	obj_dslr_cooler
-{	8	,	0	,	0	,	0	}	,	//	obj_laser
-{	0	,	15	,	0	,	0	}	,	//	obj_roof_motor_pwm
-{	9	,	52	,	0	,	0	}	,	//	obj_sen_roof_closed
-{	10	,	51	,	0	,	0	}	,	//	obj_sen_roof_open
-{	11	,	53	,	0	,	0	}	,	//	obj_sen_railing_n
-{	12	,	0	,	0	,	0	}	,	//	obj_sen_railing_e
-{	13	,	0	,	0	,	0	}	,	//	obj_sen_railing_s
-{	14	,	0	,	0	,	0	}	,	//	obj_sen_railing_w
-{	15	,	54	,	0	,	0	}	,	//	obj_sen_pier
-{	16	,	55	,	0	,	0	}	,	//	obj_sen_hatch
-{	0	,	0	,	0	,	0	}	,	//	obj_mount_park
-{	0	,	21	,	0	,	0	}	,	//	obj_sda
-{	0	,	22	,	0	,	0	}	,	//	obj_scl
-{	0	,	0	,	0	,	0	}	,	//	obj_onewire
-{	0	,	0	,	0	,	0	}	,	//	obj_ota_main
-{	0	,	0	,	0	,	1	}	,	//	obj_ota_guide
-{	0	,	0	,	0	,	2	}	,	//	obj_temp_air
-{	0	,	0	,	0	,	3	}	,	//	obj_humidity
-{	17	,	0	,	0	,	0	}	,	//	obj_heater_mode
-{	0	,	0	,	0	,	4	}		//	obj_heater_value
-};
-
-struct Obj obj;
-
 void parse_io(uint32_t io_num, int val)
 {
     switch (io_num) // +100 for MCP23x17 pins
@@ -118,6 +78,7 @@ void parse_mqtt(char *msg_in, int msgLen)
 
 void pinDigitalSet(uint8_t obj_source, bool state, bool is_relay)
 {
+    /*
     uint8_t pin = obj.pin[obj_ref[obj_source][obj_col_pin]];
     ESP_LOGI(TAG_program, "PinSet - obj_source:%i  pin:%i  state:%i  relay?:%i", obj_source, pin, state, is_relay);
 
@@ -132,5 +93,6 @@ void pinDigitalSet(uint8_t obj_source, bool state, bool is_relay)
         if (is_relay) set_mcp_pin(obj.pin[obj_ref[obj_source][obj_col_pin]], !state);
         else set_mcp_pin(obj.pin[obj_ref[obj_source][obj_col_pin]], state);
     }
+        */
 }
 

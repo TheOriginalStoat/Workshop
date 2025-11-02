@@ -31,9 +31,6 @@ static const char *TAG_main = "main";
 
 void app_main(void)
 { 
-    ledc_timer_config(&ledc_timer);
-    ledc_channel_config(&ledc_channel);
-
     ESP_LOGI(TAG_main, "System Startup: Ver %s", ver);
 
     ESP_LOGI(TAG_main, "Show hardware");
@@ -70,6 +67,9 @@ void app_main(void)
     ESP_LOGI(TAG_main, "Init GPIO");
     init_gpio();
 
+    ESP_LOGI(TAG_main, "Init Wiegand reader");
+    xTaskCreate(task, "wiegand", configMINIMAL_STACK_SIZE * 4, NULL, 5, NULL);
+
     ESP_LOGI(TAG_main, "Init sensors read task");
     xTaskCreate(sensors_read, "sensors_readr", 4096, NULL, 5, NULL);
 
@@ -87,16 +87,7 @@ static void config_read(void)
     ota_user = nvs_getStr("http_user");
     ota_pass = nvs_getStr("http_pass");
 
-    obj.w_norm[0] = strtof(nvs_getStr("0"), NULL);
-    obj.w_norm[1] = strtof(nvs_getStr("1"), NULL);
-    obj.w_norm[2] = strtof(nvs_getStr("2"), NULL);
-    obj.w_norm[3] = strtof(nvs_getStr("3"), NULL);
-    obj.w_norm[4] = strtof(nvs_getStr("4"), NULL);
-    obj.w_norm[5] = strtof(nvs_getStr("5"), NULL);
-    obj.w_norm[6] = strtof(nvs_getStr("6"), NULL);
-    obj.w_norm[7] = strtof(nvs_getStr("7"), NULL);
-    obj.w_norm[8] = strtof(nvs_getStr("8"), NULL);
-}
+   }
 
 static void init_config(void)
 {
@@ -107,17 +98,7 @@ static void init_config(void)
     nvs_setStr("mqttChanOut", "ocsStatus");
     nvs_setStr("http_user", "admin");
     nvs_setStr("http_pass", "esp32$");
-    nvs_setStr("0", "1.1");
-    nvs_setStr("1", "2.2");
-    nvs_setStr("2", "3.3");
-    nvs_setStr("3", "4.4");
-    nvs_setStr("4", "5.5");
-    nvs_setStr("5", "6.6");
-    nvs_setStr("6", "2.2");
-    nvs_setStr("7", "3.3");
-    nvs_setStr("8", "4.4");
-    nvs_setStr("9", "5.5");
-    nvs_setStr("10", "6.6");
+    
     
 }
 
@@ -131,6 +112,7 @@ void send_status(void *pvParameters)
         char splits_sensors[180];
         char splits_status[120];
 
+        /*
         for (int i = 0; i <= obj_count_state; i ++)
         {
             sprintf(state, "%i", obj.state[i]);
@@ -148,6 +130,7 @@ void send_status(void *pvParameters)
             sprintf(splits_sensors, ",%f", obj.temp[i]);
             strcat(msg, splits_sensors);
         }
+            */
 
         sprintf(splits_status, ",%lld,%s,%s<", esp_timer_get_time() / 1000000, status_task, status_msg);
         strcat(msg, splits_status);
