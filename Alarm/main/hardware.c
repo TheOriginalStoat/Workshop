@@ -147,8 +147,7 @@ static void task(void *arg)
     }
 
     // Initialize reader
-    ESP_ERROR_CHECK(wiegand_reader_init(&reader, pinWGD0, pinWGD1,
-                                        true, 4, reader_callback, WIEGAND_MSB_FIRST, WIEGAND_LSB_FIRST));
+    ESP_ERROR_CHECK(wiegand_reader_init(&reader, pinWGD0, pinWGD1, true, 4, reader_callback, WIEGAND_MSB_FIRST, WIEGAND_LSB_FIRST));
 
     data_packet_t p;
     while (1)

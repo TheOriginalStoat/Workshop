@@ -13,14 +13,53 @@
 #include "program.h"
 #include "config.h"
 
+uint8_t doorCodeBit = 0;
 int16_t state_roof_pos;
 bool enable_watchdog = true;
 char *status_msg = ">1,0,Startup,<";
 char *status_task = "none";
+char* doorCodeEntered;
 static const char *TAG_program = "program";
 
 void set_pin(uint8_t pin, bool state);
 void set_mcp_pin(uint8_t pin, bool state);
+
+void parse_wiegand(uint8_t code[4])
+{
+    if (code == wgCodeStart) doorCodeBit = 1;
+
+    else if (doorCodeBit >= 1 && doorCodeBit <= 4) 
+    {
+      doorCodeEntered[doorCodeBit] = code;
+      doorCodeBit =+ 1;
+    }
+
+    else if (code == wgCodeEnd) 
+    {
+      checkDoorCode();
+      doorCodeBit = 0;
+    }
+}
+
+void checkDoorCode()
+{
+  if (strcmp(doorCodeEntered, almCodeDisarm) == 0)
+  {
+    ESP_LOGI(TAG_program, "Alarm Disarmed");
+    // digitalWrite(pinLEDArmed, 0); 
+    // digitalWrite(pinLEDDisarmed, 1);   
+    // pinDigital("Relay Siren", pinRelaySiren, relayOff);
+  }
+
+  else if (strcmp(doorCodeEntered, almCodeArm) == 0)
+  {
+    ESP_LOGI(TAG_program, "Alarm Armed");
+    // digitalWrite(pinLEDDisarmed, 0);
+    // digitalWrite(pinLEDArmed, 1);  
+  }
+
+  else ESP_LOGI(TAG_program, "Invalid Code");
+}
 
 void parse_io(uint32_t io_num, int val)
 {

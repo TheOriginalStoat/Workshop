@@ -20,6 +20,12 @@
 #define cmdSysDebugOn       "d100"
 #define cmdSysDebugOff      "d000"
 
+// Wiegand
+#define almCodeArm          "11"
+#define almCodeDisarm       "1346"
+#define wgCodeStart         27
+#define wgCodeEnd           13
+
 #define ds18b20HexRegs      0x28, 0xFF, 0x8E, 0xC9, 0x61, 0x16, 0x04, 0xA2
 
 
